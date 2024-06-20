@@ -2,8 +2,8 @@
 Write-Host "Creating the 'C:\bin\kubeseal' directory if it doesn't exist..."
 New-Item -ItemType Directory -Path "C:\bin\kubeseal" -ErrorAction Ignore
 
-# Get the releases from the GitHub API
-Write-Host "Retrieving the releases from the GitHub API..."
+# Get releases from the GitHub API
+Write-Host "Retrieving releases from the GitHub API..."
 $releasesResponse = Invoke-WebRequest -Uri https://api.github.com/repos/bitnami-labs/sealed-secrets/releases
 $releases = $releasesResponse.Content | ConvertFrom-Json
 
