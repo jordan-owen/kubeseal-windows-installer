@@ -2,13 +2,18 @@
 Write-Host "Creating the 'C:\bin\kubeseal' directory if it doesn't exist..."
 New-Item -ItemType Directory -Path "C:\bin\kubeseal" -ErrorAction Ignore
 
-# Get the latest release information from the GitHub API
-Write-Host "Retrieving the latest release information from the GitHub API..."
-$releaseInfo = Invoke-WebRequest -Uri https://api.github.com/repos/bitnami-labs/sealed-secrets/releases/latest
+# Get releases from the GitHub API
+Write-Host "Retrieving releases from the GitHub API..."
+$releasesResponse = Invoke-WebRequest -Uri https://api.github.com/repos/bitnami-labs/sealed-secrets/releases
+$releases = $releasesResponse.Content | ConvertFrom-Json
+
+# Get the release information for the latest release that has name starting with "shared-secrets-v"
+Write-Host "Getting the release information for the latest release that has name starting with 'shared-secrets-v'..."
+$releaseInfo = $releases | Where-Object { $_.name -match "^sealed-secrets-v" } | Select-Object -First 1
 
 # Extract the download URL for the Windows kubeseal binary
 Write-Host "Extracting the download URL for the Windows kubeseal binary..."
-$downloadUrl = ($releaseInfo | ConvertFrom-Json).assets | Where-Object { $_.name -match "^kubeseal-.*-windows-amd64\.tar\.gz$" } | Select-Object -ExpandProperty "browser_download_url"
+$downloadUrl = $releaseInfo.assets | Where-Object { $_.name -match "^kubeseal-.*-windows-amd64\.tar\.gz$" } | Select-Object -ExpandProperty "browser_download_url"
 
 # Download the kubeseal binary
 Write-Host "Downloading the kubeseal binary..."
