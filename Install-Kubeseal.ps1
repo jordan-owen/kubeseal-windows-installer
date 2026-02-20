@@ -1,6 +1,16 @@
-# Create the "C:\bin\kubeseal" directory if it doesn't exist
-Write-Host "Creating the 'C:\bin\kubeseal' directory if it doesn't exist..."
-New-Item -ItemType Directory -Path "C:\bin\kubeseal" -ErrorAction Ignore
+param (
+    [string]$baseDirectory = "C:\bin\kubeseal"
+)
+
+# Create the "$baseDirectory" directory if it doesn't exist
+Write-Host "Creating the '$baseDirectory' directory if it doesn't exist..."
+if (-Not (Test-Path -Path "$baseDirectory")) {
+    $newItem = New-Item -ItemType Directory -Path "$baseDirectory" -ErrorAction SilentlyContinue
+    if (-Not $newItem) {
+        Write-Error "Failed to create directory: $baseDirectory"
+        throw "Failed to create directory: $baseDirectory"
+    }
+}
 
 # Get releases from the GitHub API
 Write-Host "Retrieving releases from the GitHub API..."
@@ -22,11 +32,12 @@ Invoke-WebRequest -Uri $downloadUrl -OutFile $tempFile
 
 # Uncompress the .tar.gz file
 Write-Host "Uncompressing the .tar.gz file..."
-Invoke-Expression "tar -xvzf $tempFile -C C:\bin\kubeseal"
+Invoke-Expression "tar -xvzf $tempFile -C $baseDirectory"
+Remove-Item $tempFile
 
-# Add the "C:\bin\kubeseal" directory to the PATH environment variable
-Write-Host "Adding the 'C:\bin\kubeseal' directory to the PATH environment variable..."
-[System.Environment]::SetEnvironmentVariable("PATH", "$env:PATH;C:\bin\kubeseal", "User")
+# Add the "$baseDirectory" directory to the PATH environment variable
+Write-Host "Adding the '$baseDirectory' directory to the PATH environment variable..."
+[System.Environment]::SetEnvironmentVariable("PATH", "$env:PATH;$baseDirectory", "User")
 
 # Refresh the PATH
 Write-Host "Refreshing the PATH..."
